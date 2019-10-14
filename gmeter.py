@@ -3,6 +3,7 @@ import struct
 import sys
 import select
 import math
+from datetime import datetime
 
 IP = '127.0.0.1'
 PORT = 4321
@@ -14,8 +15,8 @@ st = struct.Struct("2I9f")
 sock=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.bind((IP, PORT))
 
-with open('gmeter.csv', 'w') as f:
-    f.write('Time,Surge,Sway,Heave\n')
+with open(datetime.now().strftime('gmeter_%Y%m%d_%H%M%S.csv'), 'w') as f:
+    f.write('Time (s),Yaw (rad),Pitch (rad),Roll (rad),Spin X (rad/s),Spin Y (rad/s),Spin Z (rad/s),Acc X (m/s²),Acc Y (m/s²),Acc Z (m/s²),Surge (g),Sway (g),Heave (g)\n')
 
     while True:
         rlist, _, _ = select.select([sock], [], [], 1)
@@ -37,4 +38,4 @@ with open('gmeter.csv', 'w') as f:
 
             print('Surge: {: 2.2f}g Sway: {: 2.2f}g Heave: {: 2.2f}g          '.format(surge, sway, heave), end='\r')
             sys.stdout.flush()
-            f.write('{:f},{:f},{:f},{:f}\n'.format(tick/50, surge, sway, heave))
+            f.write((','.join('{:f}' for i in range(13)) + '\n').format(tick/50, yaw, pitch, roll, spin_x, spin_y, spin_z, acc_x, acc_y, acc_z, surge, sway, heave))
